@@ -21,7 +21,7 @@ import {
 } from '../utils/util';
 
 export default new MessageContextMenu({
-	name: 'Raise question',
+	name: 'Shipper Support',
 	type: ApplicationCommandType.Message,
 	execute: async ({ interaction }) => {
 		const { guildId, guild, targetMessage, channel: currentChannel } = interaction;
@@ -71,7 +71,7 @@ export default new MessageContextMenu({
 		if (!guildInform || !questionChannelId) {
 			return interaction.reply({
 				content: `Please use </init question:${fetchCommandId(
-					'Raise question',
+					'Shipper Support',
 					guild
 				)}> to set up a question channel first. If you don't undestand, please call the admin.`,
 				ephemeral: true
@@ -168,6 +168,7 @@ export default new MessageContextMenu({
 						.setCustomId('claimed')
 						.setLabel('Claim')
 						.setStyle(ButtonStyle.Primary)
+                        .setDisabled(false)
 						.setEmoji('🛄'),
 					new ButtonBuilder()
 						.setCustomId('solved')

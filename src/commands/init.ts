@@ -69,7 +69,7 @@ export default new Command({
 	],
 	execute: async ({ interaction, args }) => {
 		const subCommandName = args.getSubcommand();
-		const { guildId, guild } = interaction;
+		const { guildId, guild, member } = interaction;
 		const cache = myCache.myGet('Guild')[guildId];
 		let guildInform = defaultGuildSetting;
 
@@ -91,6 +91,12 @@ export default new Command({
 				...guildInform,
 				...cache
 			};
+		}
+		if (!member.roles.cache.has(guildInform.adminRole)) {
+			return interaction.reply({
+				content: 'Sorry, only admin team is allowed to run this command.',
+				ephemeral: true
+			});
 		}
 
 		if (subCommandName === 'read') {

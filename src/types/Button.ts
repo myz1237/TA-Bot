@@ -13,7 +13,7 @@ interface ButtonRunOptions {
 }
 
 type RunFunction = (options: ButtonRunOptions) => any;
-type ButtonCustomId = 'claimed' | 'solved';
+type ButtonCustomId = 'claimed' | 'solved' | 'summary';
 export type ButtonCollectorCustomId = '';
 export interface ButtonType {
 	customIds: Array<ButtonCustomId>;

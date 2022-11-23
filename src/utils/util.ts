@@ -1,4 +1,5 @@
 import {
+	APIEmbedField,
 	AuditLogEvent,
 	EmbedBuilder,
 	Guild,
@@ -10,7 +11,7 @@ import { sprintf } from 'sprintf-js';
 import { GuildInform } from '../types/Cache';
 import { CommandNameEmun } from '../types/Command';
 import { ContextMenuNameEnum } from '../types/ContextMenu';
-import { ERROR_REPLY, NUMBER } from './const';
+import { ERROR_REPLY, FieldsName, NUMBER } from './const';
 import { TimeOutError } from './error';
 export interface awaitWrapType<T> {
 	result: T | null;
@@ -172,4 +173,8 @@ export function fetchCommandId(commandName: CommandNameEmun | ContextMenuNameEnu
 			.filter((cmd) => cmd.name === commandName)
 			.first().id;
 	}
+}
+
+export function fetchClaimedMemberId(fields: APIEmbedField[]) {
+	return fields.filter(({ name }) => name === FieldsName.ClaimedBy)[0].value.slice(2, -1);
 }
