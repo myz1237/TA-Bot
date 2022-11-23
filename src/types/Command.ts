@@ -20,7 +20,7 @@ interface CommandRunOptions {
 }
 
 type RunFunction = (options: CommandRunOptions) => any;
-export type CommandNameEmun = 'init';
+export type CommandNameEmun = 'init' | 'answer';
 export type CommandType = {
 	name: CommandNameEmun;
 	userPermissions?: PermissionResolvable[];

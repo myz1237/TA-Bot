@@ -15,7 +15,7 @@ import { promisify } from 'util';
 import { prisma } from '../prisma/prisma';
 import { AutoType } from '../types/Auto';
 import { ButtonType } from '../types/Button';
-import { GuildSettings } from '../types/Cache';
+import { GuildSettings, QuestionCache } from '../types/Cache';
 import { CommandType } from '../types/Command';
 import { RegisterCommandsOptions } from '../types/CommandRegister';
 import { MessageContextMenuType, UserContextMenuType } from '../types/ContextMenu';
@@ -164,8 +164,9 @@ export class MyClient extends Client {
 
 	private async _loadCache() {
 		await prisma.$connect();
-		const guildsInform = await prisma.guild.findMany();
-		const guildSettings: GuildSettings = guildsInform.reduce((pre, cur) => {
+
+		const guildsInDB = await prisma.guild.findMany();
+		const guildSettings: GuildSettings = guildsInDB.reduce((pre, cur) => {
 			const { id } = cur;
 
 			delete cur.id;
@@ -173,10 +174,33 @@ export class MyClient extends Client {
 			return pre;
 		}, {});
 
+		const questionsInDB = await prisma.question.findMany({
+			where: {
+				solved: true
+			}
+		});
+		const questions: QuestionCache = questionsInDB.reduce((pre, cur) => {
+			const { id, discordId } = cur;
+
+			if (discordId in pre) {
+				pre[discordId][id] = {
+					summary: cur.summary
+				};
+			} else {
+				pre[discordId] = {
+					[id]: {
+						summary: cur.summary
+					}
+				};
+			}
+			return pre;
+		}, {});
+
 		const newGuildData: Array<Prisma.GuildCreateManyInput> = [];
 
 		for (const [guildId, guild] of this.guilds.cache) {
 			const guildInform = guildSettings[guildId];
+			const questionInform = questions[guildId];
 
 			if (!guildInform) {
 				const defaultGuildInform = defaultGuildSetting;
@@ -190,6 +214,10 @@ export class MyClient extends Client {
 					...defaultGuildInform
 				});
 				guildSettings[guildId] = defaultGuildInform;
+			}
+
+			if (!questionInform) {
+				questions[guildId] = {};
 			}
 		}
 		if (newGuildData.length !== 0) {
@@ -206,7 +234,10 @@ export class MyClient extends Client {
 		}
 
 		myCache.mySet('Guild', guildSettings);
+		myCache.mySet('Questions', questions);
 		this.table.addRow('Guilds', `✅ Fetched and cached`);
+		this.table.addRow('Questions', `✅ Fetched and cached`);
+
 		logger.info(`\n${this.table.toString()}`);
 	}
 }

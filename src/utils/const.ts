@@ -35,7 +35,8 @@ export const ButtonCollectorCustomIdRecord: Readonly<Record<ButtonCollectorCusto
 };
 
 export const CACHE_KEYS: Readonly<Record<keyof CacheType, keyof CacheType>> = {
-	Guild: 'Guild'
+	Guild: 'Guild',
+	Questions: 'Questions'
 };
 
 export const defaultGuildSetting: GuildInform = {

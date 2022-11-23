@@ -10,6 +10,7 @@ import {
 } from 'discord.js';
 import { sprintf } from 'sprintf-js';
 
+import { prisma } from '../prisma/prisma';
 import { myCache } from '../structures/Cache';
 import { MessageContextMenu } from '../structures/ContextMenu';
 import { FieldsName, LINK, QuestionStatus } from '../utils/const';
@@ -110,11 +111,12 @@ export default new MessageContextMenu({
 			startMessage: targetMessage,
 			autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays
 		});
+		const questionThreadId = questionThread.id;
 
 		// Forward Message to the question channel
 		const threadLink = sprintf(LINK.THREAD, {
 			guildId: guildId,
-			threadId: questionThread.id
+			threadId: questionThreadId
 		});
 
 		await questionChannel.send({
@@ -148,7 +150,7 @@ export default new MessageContextMenu({
 							inline: true
 						}
 					])
-					.setFooter({ text: `Question ID: ${questionThread.id}` })
+					.setFooter({ text: `Question ID: ${questionThreadId}` })
 			],
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -168,7 +170,7 @@ export default new MessageContextMenu({
 						.setCustomId('claimed')
 						.setLabel('Claim')
 						.setStyle(ButtonStyle.Primary)
-                        .setDisabled(false)
+						.setDisabled(false)
 						.setEmoji('🛄'),
 					new ButtonBuilder()
 						.setCustomId('solved')
@@ -180,8 +182,19 @@ export default new MessageContextMenu({
 			]
 		});
 
+		await prisma.question.create({
+			data: {
+				id: questionThreadId,
+                discordId: guildId,
+                raisedBy: memberId,
+                taId: '',
+                taName: '',
+                summary: ''
+			}
+		});
+
 		return interaction.followUp({
-			content: `Thanks for your question. Please be patient, our TAs are on the way. Keep eyes on the <#${questionThread.id}>.`,
+			content: `Thanks for your question. Please be patient, our TAs are on the way. Keep eyes on the <#${questionThreadId}>.`,
 			ephemeral: true
 		});
 	}

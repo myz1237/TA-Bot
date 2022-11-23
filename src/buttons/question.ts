@@ -9,6 +9,7 @@ import {
 	ThreadChannel
 } from 'discord.js';
 
+import { prisma } from '../prisma/prisma';
 import { Button } from '../structures/Button';
 import { myCache } from '../structures/Cache';
 import { FieldsName, QuestionStatus } from '../utils/const';
@@ -23,6 +24,7 @@ export default new Button({
 	customIds: ['claimed', 'solved', 'summary'],
 	execute: async ({ interaction }) => {
 		const { message, customId, guild, guildId, member } = interaction;
+		const memberName = member.displayName;
 		const { taRole } = myCache.myGet('Guild')[guildId];
 
 		if (!taRole) {
@@ -119,7 +121,7 @@ export default new Button({
 						break;
 				}
 			});
-			buttons.components[0].label = `Claimed By ${interaction.member.displayName}`;
+			buttons.components[0].label = `Claimed By ${memberName}`;
 			buttons.components[0].disabled = true;
 			buttons.components[1].disabled = false;
 
@@ -135,6 +137,16 @@ export default new Button({
 					);
 				}
 			}
+			await prisma.question.update({
+				where: {
+					id: questionThreadId
+				},
+				data: {
+					createTimestamp: new Date(),
+					taId: member.id,
+					taName: memberName
+				}
+			});
 			return;
 		}
 
@@ -164,7 +176,7 @@ export default new Button({
 			});
 
 			buttons.components[1].disabled = true;
-			buttons.components[1].label = `Solved by ${interaction.member.displayName}`;
+			buttons.components[1].label = `Solved by ${memberName}`;
 			await message.edit({
 				embeds: [embed],
 				components: [message.components[0], buttons]
@@ -176,6 +188,31 @@ export default new Button({
 						questionThread.name.replace(QuestionStatus.Claimed, QuestionStatus.Solved)
 					);
 				}
+			}
+
+			const result = await prisma.question.update({
+				where: {
+					id: questionThreadId
+				},
+				data: {
+					solvedTimestamp: new Date(),
+					solved: true
+				},
+				select: {
+					summary: true
+				}
+			});
+
+			if (result.summary) {
+				myCache.mySet('Questions', {
+					...myCache.myGet('Questions'),
+					[guildId]: {
+						...myCache.myGet('Questions')[guildId],
+						[questionThreadId]: {
+							summary: result.summary
+						}
+					}
+				});
 			}
 
 			// todo check if the summary was set

@@ -11,8 +11,20 @@ datasource db {
 }
 
 model Guild {
-    id                String @id 
+    id                String @id
     taRole            String @default("")
     adminRole         String @default("")
     questionChannelId String @default("")
+}
+
+model Question {
+    id              String   @id
+    createTimestamp DateTime @default(now())
+    solvedTimestamp DateTime @default(now())
+    solved          Boolean  @default(false)
+    raisedBy        String
+    taId            String
+    taName          String
+    discordId       String
+    summary         String
 }
