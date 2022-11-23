@@ -3,28 +3,48 @@ import {
 	ApplicationCommandType,
 	ButtonBuilder,
 	ButtonStyle,
+	ChannelType,
 	EmbedBuilder,
 	TextChannel,
-	ThreadAutoArchiveDuration,
+	ThreadAutoArchiveDuration
 } from 'discord.js';
+import { sprintf } from 'sprintf-js';
 
 import { myCache } from '../structures/Cache';
 import { MessageContextMenu } from '../structures/ContextMenu';
-import { QuestionStatus } from '../utils/const';
+import { FieldsName, LINK, QuestionStatus } from '../utils/const';
 import {
 	awaitWrap,
-	checkTextChannelPermission,
-	fetchCommandId,
-	messageHandler
+	checkTextChannelCommonPermission,
+	checkTextChannelThreadPermission,
+	fetchCommandId
 } from '../utils/util';
 
 export default new MessageContextMenu({
 	name: 'Raise question',
 	type: ApplicationCommandType.Message,
 	execute: async ({ interaction }) => {
-		const { guildId, guild, targetMessage } = interaction;
-		const { content, attachments, author } = targetMessage;
+		const { guildId, guild, targetMessage, channel: currentChannel } = interaction;
+
+		// All pre-checking
+		if (currentChannel.type !== ChannelType.GuildText) {
+			return interaction.reply({
+				content: 'Sorry, this command is only used in the Text Channel.',
+				ephemeral: true
+			});
+		}
+
+		const { author } = targetMessage;
+
+		if (targetMessage.hasThread) {
+			return interaction.reply({
+				content: 'Sorry, you cannot recreate a thread based on this message.',
+				ephemeral: true
+			});
+		}
+
 		const { displayName: memberName, id: memberId } = targetMessage.member;
+		const botId = guild.members.me.id;
 
 		if (author.bot) {
 			return interaction.reply({
@@ -32,16 +52,23 @@ export default new MessageContextMenu({
 				ephemeral: true
 			});
 		}
-		if (!content && attachments.size === 0) {
+
+		const currentChannelPermissionChecking = checkTextChannelThreadPermission(
+			currentChannel,
+			botId
+		);
+
+		if (currentChannelPermissionChecking) {
 			return interaction.reply({
-				content: 'Sorry, I cannot find any plain text or attachement here.',
+				content: `Sorry, I cannot raise this question for you, becasue ${currentChannelPermissionChecking} Please report it to the admin.`,
 				ephemeral: true
 			});
 		}
-		const guildInform = myCache.myGet('Guild')[guildId];
-		const targetChannelId = guildInform?.questionChannelId;
 
-		if (!guildInform || !targetChannelId) {
+		const guildInform = myCache.myGet('Guild')[guildId];
+		const questionChannelId = guildInform?.questionChannelId;
+
+		if (!guildInform || !questionChannelId) {
 			return interaction.reply({
 				content: `Please use </init question:${fetchCommandId(
 					'Raise question',
@@ -51,53 +78,94 @@ export default new MessageContextMenu({
 			});
 		}
 
-		let targetChannel = guild.channels.cache.get(targetChannelId) as TextChannel;
+		let questionChannel = guild.channels.cache.get(questionChannelId) as TextChannel;
 
-		if (!targetChannel) {
-			const { result, error } = await awaitWrap(guild.channels.fetch(targetChannelId));
+		if (!questionChannel) {
+			const { result, error } = await awaitWrap(guild.channels.fetch(questionChannelId));
 
 			if (error) {
 				return interaction.reply({
-					content: `Sorry, <#${targetChannelId}> is unfetchable.`,
+					content: `Sorry, <#${questionChannelId}> is unfetchable.`,
 					ephemeral: true
 				});
 			} else {
-				targetChannel = result as TextChannel;
+				questionChannel = result as TextChannel;
 			}
 		}
 
-		const permissionChecking = checkTextChannelPermission(targetChannel, guild.members.me.id);
+		const permissionChecking = checkTextChannelCommonPermission(questionChannel, botId);
 
 		if (permissionChecking) {
 			return interaction.reply({
-				content: permissionChecking,
+				content: `Sorry, I cannot raise this question for you, because Question Channel ${permissionChecking} Please report it to the admin.`,
 				ephemeral: true
 			});
 		}
+
+		// Create thread based on the message
 		await interaction.deferReply({ ephemeral: true });
 		const threadName = `${QuestionStatus.Wait} -- Question from ${memberName}`;
-
-		const thread = await targetChannel.threads.create({
+		const questionThread = await currentChannel.threads.create({
 			name: threadName,
+			startMessage: targetMessage,
 			autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays
 		});
 
-		// todo handle length > 2000
-		// todo limited number of attachments
-		const threadContent = `Questions from <@${memberId}>: \n${messageHandler(targetMessage)}`;
-		const current = Math.floor(new Date().getTime() / 1000);
-		const threadEmbedDescription = `**Who Raised**: <@${memberId}>\n**Status**: ${QuestionStatus.Wait}\n**Start**: <t:${current}:f>(<t:${current}:R>)\n**End**: \`Unavailable\``;
+		// Forward Message to the question channel
+		const threadLink = sprintf(LINK.THREAD, {
+			guildId: guildId,
+			threadId: questionThread.id
+		});
 
-		await thread.send({
+		await questionChannel.send({
 			embeds: [
 				new EmbedBuilder()
-					.setTitle('Question Dashboard')
-					.setDescription(threadEmbedDescription)
+					.setTitle(`Question from @${memberName}`)
+					.addFields([
+						{
+							name: FieldsName.Status,
+							value: QuestionStatus.Wait,
+							inline: true
+						},
+						{
+							name: FieldsName.RaisedBy,
+							value: `<@${memberId}>`,
+							inline: true
+						},
+						{
+							name: FieldsName.ClaimedBy,
+							value: '`Unavailable`',
+							inline: true
+						},
+						{
+							name: FieldsName.Start,
+							value: '`Unavailable`',
+							inline: true
+						},
+						{
+							name: FieldsName.End,
+							value: '`Unavailable`',
+							inline: true
+						}
+					])
+					.setFooter({ text: `Question ID: ${questionThread.id}` })
 			],
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents([
 					new ButtonBuilder()
-						.setCustomId('claim')
+						.setLabel('Help Needed!')
+						.setStyle(ButtonStyle.Link)
+						.setURL(threadLink)
+						.setEmoji('🔗'),
+					new ButtonBuilder()
+						.setCustomId('summary')
+						.setLabel('Question Summary')
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji('📢')
+				]),
+				new ActionRowBuilder<ButtonBuilder>().addComponents([
+					new ButtonBuilder()
+						.setCustomId('claimed')
 						.setLabel('Claim')
 						.setStyle(ButtonStyle.Primary)
 						.setEmoji('🛄'),
@@ -105,24 +173,14 @@ export default new MessageContextMenu({
 						.setCustomId('solved')
 						.setLabel('Solved')
 						.setStyle(ButtonStyle.Success)
+						.setDisabled(true)
 						.setEmoji('✅')
-				]),
-				new ActionRowBuilder<ButtonBuilder>().addComponents([
-					new ButtonBuilder()
-						.setCustomId('summary')
-						.setLabel('Question Summary')
-						.setStyle(ButtonStyle.Secondary)
-						.setEmoji('📢')
 				])
 			]
 		});
-		await thread.send({
-			content: threadContent,
-			files: [...attachments.values()]
-		});
 
 		return interaction.followUp({
-			content: `Thanks for your question. Please be patient, our TAs are on the way. Keep eyes on the <#${thread.id}>.`,
+			content: `Thanks for your question. Please be patient, our TAs are on the way. Keep eyes on the <#${questionThread.id}>.`,
 			ephemeral: true
 		});
 	}

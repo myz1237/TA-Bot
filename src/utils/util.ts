@@ -3,8 +3,6 @@ import {
 	EmbedBuilder,
 	Guild,
 	GuildTextBasedChannel,
-	Message,
-	MessageMentions,
 	PermissionFlagsBits
 } from 'discord.js';
 import { sprintf } from 'sprintf-js';
@@ -112,7 +110,7 @@ export async function fetchGuildDefaultAdminRoleFromAuditLog(
 	return highestRoleId;
 }
 
-export function checkTextChannelPermission(channel: GuildTextBasedChannel, userId: string) {
+export function checkTextChannelThreadPermission(channel: GuildTextBasedChannel, userId: string) {
 	if (!channel.permissionsFor(userId, true).has([PermissionFlagsBits.ViewChannel])) {
 		return 'Missing **VIEW CHANNEL** access.';
 	}
@@ -126,6 +124,20 @@ export function checkTextChannelPermission(channel: GuildTextBasedChannel, userI
 
 	if (!channel.permissionsFor(userId, true).has([PermissionFlagsBits.SendMessagesInThreads])) {
 		return 'Missing **SEND MESSAGES IN THREADS** access.';
+	}
+
+	if (!channel.permissionsFor(userId, true).has([PermissionFlagsBits.ManageThreads])) {
+		return 'Missing **MANAGE THREADS** access.';
+	}
+	return false;
+}
+
+export function checkTextChannelCommonPermission(channel: GuildTextBasedChannel, userId: string) {
+	if (!channel.permissionsFor(userId, true).has([PermissionFlagsBits.ViewChannel])) {
+		return 'Missing **VIEW CHANNEL** access.';
+	}
+	if (!channel.permissionsFor(userId, true).has([PermissionFlagsBits.SendMessages])) {
+		return 'Missing **SEND MESSAGES** access.';
 	}
 	return false;
 }
@@ -160,23 +172,4 @@ export function fetchCommandId(commandName: CommandNameEmun | ContextMenuNameEnu
 			.filter((cmd) => cmd.name === commandName)
 			.first().id;
 	}
-}
-
-export function messageHandler(message: Message) {
-	const members = message.mentions.members.map((member) => '@' + member.displayName);
-	const roles = message.mentions.roles.map((role) => '@' + role.name);
-	let content = message.content;
-
-	let index = 0;
-
-	while (content.match(MessageMentions.UsersPattern)) {
-		content = content.replace(MessageMentions.UsersPattern, members[index]);
-		++index;
-	}
-	index = 0;
-	while (content.match(MessageMentions.RolesPattern)) {
-		content = content.replace(MessageMentions.RolesPattern, roles[index]);
-		++index;
-	}
-	return content;
 }

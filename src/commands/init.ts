@@ -10,7 +10,7 @@ import { myCache } from '../structures/Cache';
 import { Command } from '../structures/Command';
 import { defaultGuildSetting } from '../utils/const';
 import {
-	checkTextChannelPermission,
+	checkTextChannelCommonPermission,
 	fetchGuildDefaultAdminRoleFromAuditLog,
 	readGuildSetting
 } from '../utils/util';
@@ -173,7 +173,7 @@ export default new Command({
 		if (subCommandName === 'question') {
 			const targetChannel = args.getChannel('channel') as TextChannel;
 			const targetChannelId = targetChannel.id;
-			const permissionChecking = checkTextChannelPermission(
+			const permissionChecking = checkTextChannelCommonPermission(
 				targetChannel,
 				guild.members.me.id
 			);

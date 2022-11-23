@@ -4,13 +4,19 @@ import { CacheType, GuildInform } from '../types/Cache';
 
 type NumericalProperty = 'AWAIT_TIMEOUT' | 'AUTOCOMPLETE_OPTION_LENGTH';
 type ErroProperty = 'COMMON' | 'GRAPHQL' | 'INTERACTION' | 'BUTTON' | 'AUTO' | 'MODAL' | 'MENU';
+type LinkProperty = 'THREAD';
 
 type Numerical = Readonly<Record<NumericalProperty, number>>;
 type InternalError = Readonly<Record<ErroProperty, string>>;
+type Link = Readonly<Record<LinkProperty, string>>;
 
 export const NUMBER: Numerical = {
 	AWAIT_TIMEOUT: 15 * 1000,
 	AUTOCOMPLETE_OPTION_LENGTH: 25
+};
+
+export const LINK: Link = {
+	THREAD: 'https://discord.com/channels/%(guildId)s/%(threadId)s'
 };
 
 export const ERROR_REPLY: InternalError = {
@@ -39,8 +45,15 @@ export const defaultGuildSetting: GuildInform = {
 };
 
 export enum QuestionStatus {
-	Wait = 'Waiting',
-	Claimed = 'Claimed',
-	Solved = 'Solved',
-	GiveUp = 'Giveup'
+	Wait = 'WAITING',
+	Claimed = 'CLAIMED',
+	Solved = 'SOLVED'
+}
+
+export enum FieldsName {
+	Status = 'Status',
+	RaisedBy = 'Raised By',
+	ClaimedBy = 'Claimed By',
+	Start = 'Start Timestamp',
+	End = 'End Timestamp'
 }
