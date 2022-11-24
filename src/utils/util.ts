@@ -1,3 +1,6 @@
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import utc from 'dayjs/plugin/utc';
 import {
 	APIEmbedField,
 	AuditLogEvent,
@@ -9,8 +12,9 @@ import {
 import { sprintf } from 'sprintf-js';
 
 import { GuildInform } from '../types/Cache';
-import { CommandNameEmun } from '../types/Command';
+import { CommandNameEnum } from '../types/Command';
 import { ContextMenuNameEnum } from '../types/ContextMenu';
+import { monthDuration, weekDuration } from '../types/Utils';
 import { ERROR_REPLY, FieldsName, NUMBER } from './const';
 import { TimeOutError } from './error';
 export interface awaitWrapType<T> {
@@ -165,7 +169,7 @@ export function readGuildSetting(guildInform: GuildInform) {
 	]);
 }
 
-export function fetchCommandId(commandName: CommandNameEmun | ContextMenuNameEnum, guild: Guild) {
+export function fetchCommandId(commandName: CommandNameEnum | ContextMenuNameEnum, guild: Guild) {
 	if (process.env.MODE === 'dev') {
 		return guild.commands.cache.filter((cmd) => cmd.name === commandName).first().id;
 	} else {
@@ -177,4 +181,30 @@ export function fetchCommandId(commandName: CommandNameEmun | ContextMenuNameEnu
 
 export function fetchClaimedMemberId(fields: APIEmbedField[]) {
 	return fields.filter(({ name }) => name === FieldsName.ClaimedBy)[0].value.slice(2, -1);
+}
+
+export function getStartAndEndOfWeekUTCInSec(year: number, week: number): weekDuration {
+	dayjs.extend(isoWeek);
+	dayjs.extend(utc);
+	const thisWeek = dayjs().utc().set('year', year).startOf('year').add(week, 'week');
+
+	return {
+		start: Math.floor(thisWeek.startOf('isoWeek').valueOf() / 1000),
+		end: Math.floor(thisWeek.endOf('isoWeek').valueOf() / 1000)
+	};
+}
+
+export function getStartAndEndOfMonthUTCInSec(year: number, month: number): monthDuration {
+	dayjs.extend(isoWeek);
+	dayjs.extend(utc);
+	const thisWeek = dayjs()
+		.utc()
+		.set('year', year)
+		.startOf('year')
+		.add(month - 1, 'month');
+
+	return {
+		start: Math.floor(thisWeek.startOf('month').valueOf() / 1000),
+		end: Math.floor(thisWeek.endOf('month').valueOf() / 1000)
+	};
 }

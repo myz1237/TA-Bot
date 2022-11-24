@@ -8,6 +8,7 @@ import {
 import { prisma } from '../prisma/prisma';
 import { myCache } from '../structures/Cache';
 import { Command } from '../structures/Command';
+import { CommandNameEnum } from '../types/Command';
 import { defaultGuildSetting } from '../utils/const';
 import {
 	checkTextChannelCommonPermission,
@@ -16,7 +17,7 @@ import {
 } from '../utils/util';
 
 export default new Command({
-	name: 'init',
+	name: CommandNameEnum.Init,
 	type: ApplicationCommandType.ChatInput,
 	description: 'TA Bot Init Worflow',
 	options: [

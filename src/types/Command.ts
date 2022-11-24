@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {
 	ApplicationCommandType,
 	ChatInputApplicationCommandData,
@@ -20,9 +21,14 @@ interface CommandRunOptions {
 }
 
 type RunFunction = (options: CommandRunOptions) => any;
-export type CommandNameEmun = 'init' | 'answer';
+export enum  CommandNameEnum {
+	Init = 'init',
+	Answer = 'answer',
+	Help = 'help',
+	Collect = 'collect'
+}
 export type CommandType = {
-	name: CommandNameEmun;
+	name: CommandNameEnum;
 	userPermissions?: PermissionResolvable[];
 	execute: RunFunction;
 	type: ApplicationCommandType.ChatInput;

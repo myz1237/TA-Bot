@@ -21,6 +21,7 @@
 		"@types/lodash": "^4.14.186",
 		"@types/sprintf-js": "^1.1.2",
 		"ascii-table": "^0.0.9",
+		"dayjs": "^1.11.6",
 		"discord-api-types": "^0.37.19",
 		"discord.js": "^14.6.0",
 		"dotenv": "^16.0.3",

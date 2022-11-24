@@ -13,6 +13,8 @@ import { sprintf } from 'sprintf-js';
 import { prisma } from '../prisma/prisma';
 import { myCache } from '../structures/Cache';
 import { MessageContextMenu } from '../structures/ContextMenu';
+import { CommandNameEnum } from '../types/Command';
+import { ContextMenuNameEnum } from '../types/ContextMenu';
 import { FieldsName, LINK, QuestionStatus } from '../utils/const';
 import {
 	awaitWrap,
@@ -22,7 +24,7 @@ import {
 } from '../utils/util';
 
 export default new MessageContextMenu({
-	name: 'Shipper Support',
+	name: ContextMenuNameEnum.RaiseQuestion,
 	type: ApplicationCommandType.Message,
 	execute: async ({ interaction }) => {
 		const { guildId, guild, targetMessage, channel: currentChannel } = interaction;
@@ -71,8 +73,8 @@ export default new MessageContextMenu({
 
 		if (!guildInform || !questionChannelId) {
 			return interaction.reply({
-				content: `Please use </init question:${fetchCommandId(
-					'Shipper Support',
+				content: `Please use </${CommandNameEnum.Init} question:${fetchCommandId(
+					ContextMenuNameEnum.RaiseQuestion,
 					guild
 				)}> to set up a question channel first. If you don't undestand, please call the admin.`,
 				ephemeral: true

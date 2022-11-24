@@ -9,6 +9,7 @@ module.exports = {
 		// mocha: true,
 		// jest: true,
 		// jquery: true
+		es2020: true
 	},
 	globals: {
 		// Your global variables (setting to false means it's not allowed to be reassigned)

@@ -12,6 +12,7 @@ import {
 import { prisma } from '../prisma/prisma';
 import { Button } from '../structures/Button';
 import { myCache } from '../structures/Cache';
+import { CommandNameEnum } from '../types/Command';
 import { FieldsName, QuestionStatus } from '../utils/const';
 import {
 	awaitWrap,
@@ -28,10 +29,10 @@ export default new Button({
 		const { taRole } = myCache.myGet('Guild')[guildId];
 
 		if (!taRole) {
-			const initCommandId = fetchCommandId('init', guild);
+			const initCommandId = fetchCommandId(CommandNameEnum.Init, guild);
 
 			return interaction.reply({
-				content: `Please set up TA role with the </init ta: ${initCommandId}>`,
+				content: `Please set up TA role with the </${CommandNameEnum.Init} ta: ${initCommandId}>`,
 				ephemeral: true
 			});
 		} else {

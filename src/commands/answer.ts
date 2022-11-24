@@ -9,10 +9,11 @@ import { sprintf } from 'sprintf-js';
 
 import { myCache } from '../structures/Cache';
 import { Command } from '../structures/Command';
+import { CommandNameEnum } from '../types/Command';
 import { LINK } from '../utils/const';
 
 export default new Command({
-	name: 'answer',
+	name: CommandNameEnum.Answer,
 	description: 'Query solved questions',
 	type: ApplicationCommandType.ChatInput,
 	options: [

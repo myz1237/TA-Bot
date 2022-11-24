@@ -2,9 +2,10 @@ import { ApplicationCommandOptionChoiceData } from 'discord.js';
 
 import { Auto } from '../structures/AutoComplete';
 import { myCache } from '../structures/Cache';
+import { CommandNameEnum } from '../types/Command';
 
 export default new Auto({
-	correspondingCommandName: 'answer',
+	correspondingCommandName: CommandNameEnum.Answer,
 	execute: ({ interaction }) => {
 		const { value: inputValue } = interaction.options.getFocused(true);
 		const { guildId } = interaction;

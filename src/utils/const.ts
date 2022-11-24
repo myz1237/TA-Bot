@@ -5,10 +5,12 @@ import { CacheType, GuildInform } from '../types/Cache';
 type NumericalProperty = 'AWAIT_TIMEOUT' | 'AUTOCOMPLETE_OPTION_LENGTH';
 type ErroProperty = 'COMMON' | 'GRAPHQL' | 'INTERACTION' | 'BUTTON' | 'AUTO' | 'MODAL' | 'MENU';
 type LinkProperty = 'THREAD';
+type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW';
 
 type Numerical = Readonly<Record<NumericalProperty, number>>;
 type InternalError = Readonly<Record<ErroProperty, string>>;
 type Link = Readonly<Record<LinkProperty, string>>;
+type Content = Readonly<Record<ContentProperty, string>>;
 
 export const NUMBER: Numerical = {
 	AWAIT_TIMEOUT: 15 * 1000,
@@ -17,6 +19,13 @@ export const NUMBER: Numerical = {
 
 export const LINK: Link = {
 	THREAD: 'https://discord.com/channels/%(guildId)s/%(threadId)s'
+};
+
+export const CONTENT: Content = {
+	DATA_ROW:
+		'> <@%(userId)s>  `%(totalHours)s`hrs  `%(answerCount)d`answers  `%(avgHours)s`Avg.hrs\n',
+	WEEK_ROW: '**WEEK** \`%(week)s\`: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
+	MONTH_ROW: '**MONTH** \`%(month)s\`: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n'
 };
 
 export const ERROR_REPLY: InternalError = {

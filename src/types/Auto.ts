@@ -1,6 +1,6 @@
 import { AutocompleteInteraction } from 'discord.js';
 import { MyClient } from '../structures/Client';
-import { CommandNameEmun } from './Command';
+import { CommandNameEnum } from './Command';
 
 interface AutoRunOptions {
 	client: MyClient;
@@ -9,6 +9,6 @@ interface AutoRunOptions {
 
 type RunFunction = (options: AutoRunOptions) => any;
 export interface AutoType {
-	correspondingCommandName: CommandNameEmun;
+	correspondingCommandName: CommandNameEnum;
 	execute: RunFunction;
 }
