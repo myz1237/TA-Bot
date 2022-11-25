@@ -10,7 +10,7 @@
 		"watch": "tsc -w",
 		"eslint": "eslint src --ext .ts",
 		"generate": "npx prisma generate --schema ./src/prisma/schema.prisma",
-		"deploy": "rm -rf dist && && npm install && npm run build && ((pm2 delete ta-bot && pm2 start pm2.config.js) || pm2 start pm2.config.js)"
+		"deploy": "rm -rf dist && npm install && npm run generate && npm run build && ((pm2 delete ta-bot && pm2 start pm2.config.js) || pm2 start pm2.config.js)"
 	},
 	"keywords": [],
 	"author": "Alex1237",
