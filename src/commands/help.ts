@@ -19,6 +19,9 @@ export default new Command({
 
 		const raiseCommandName = ContextMenuNameEnum.RaiseQuestion;
 
+		const collectCommandName = CommandNameEnum.Collect;
+		const collectCommandId = fetchCommandId(collectCommandName, guild);
+
 		const description = `
         **${initCommandName}**
         > </${initCommandName} read:${initCommandId}> Read current bot configuration.
@@ -30,6 +33,9 @@ export default new Command({
         > \`/answer query target\` Get an answer of a query and mention a user.
         **${raiseCommandName}**
         > Raise your question in a text channel and wait for reply from TAs.
+         **${collectCommandName}**
+        > </${collectCommandName} by_week:${collectCommandId}> Collect weekly data.
+        > </${collectCommandName} by_month:${collectCommandId}> Collect monthly data.
         `;
 
 		return interaction.reply({
