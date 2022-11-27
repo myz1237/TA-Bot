@@ -4,11 +4,16 @@ import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder } fr
 import { sprintf } from 'sprintf-js';
 
 import { prisma } from '../prisma/prisma';
+import { myCache } from '../structures/Cache';
 import { Command } from '../structures/Command';
 import { CommandNameEnum } from '../types/Command';
 import { MonthlyTaData, WeeklyTaData } from '../types/Utils';
-import { CONTENT } from '../utils/const';
-import { getStartAndEndOfMonthUTCInSec, getStartAndEndOfWeekUTCInSec } from '../utils/util';
+import { CONTENT, defaultGuildSetting, NUMBER } from '../utils/const';
+import {
+	fetchGuildDefaultAdminRoleFromAuditLog,
+	getStartAndEndOfMonthUTCInSec,
+	getStartAndEndOfWeekUTCInSec
+} from '../utils/util';
 
 export default new Command({
 	name: CommandNameEnum.Collect,
@@ -28,7 +33,42 @@ export default new Command({
 	],
 	execute: async ({ interaction, args }) => {
 		const subCommandName = args.getSubcommand();
-		let embedDescription = 'No Data';
+		const { guildId, guild, member } = interaction;
+		const cache = myCache.myGet('Guild')[guildId];
+		let guildInform = defaultGuildSetting;
+
+		if (!cache) {
+			const defaultAdminRoleId = await fetchGuildDefaultAdminRoleFromAuditLog(guild);
+
+			if (defaultAdminRoleId) {
+				guildInform = {
+					...guildInform,
+					adminRole: defaultAdminRoleId
+				};
+			}
+			myCache.mySet('Guild', {
+				...myCache.myGet('Guild'),
+				[guildId]: guildInform
+			});
+			await prisma.guild.create({
+				data: {
+					id: guildId,
+					...guildInform
+				}
+			});
+		} else {
+			guildInform = {
+				...guildInform,
+				...cache
+			};
+		}
+		if (!member.roles.cache.has(guildInform.adminRole)) {
+			return interaction.reply({
+				content: 'Sorry, only admin team is allowed to run this command.',
+				ephemeral: true
+			});
+		}
+
 		let data: Array<WeeklyTaData | MonthlyTaData>;
 		let durationProperty: 'week' | 'month';
 
@@ -37,9 +77,9 @@ export default new Command({
 		if (subCommandName === 'by_week') {
 			data = await prisma.$queryRaw<Array<WeeklyTaData>>(
 				Prisma.sql`
-                    SELECT taId, T.week, sum(T.diff)sumInSec, count(T.week)count, (sum(T.diff)/count(T.week))avgInSec
+                    SELECT taId, T.week, sum(T.answerDiff)sumInSec, count(T.week)count, (sum(T.responseDiff)/count(T.week))avgResponseInSec
                     FROM (
-                        SELECT DATE_FORMAT(solvedTimestamp, '%Y%u')week, taId, (solvedTimestamp-createTimestamp)diff
+                        SELECT DATE_FORMAT(solvedTimestamp, '%Y%u')week, taId, (solvedTimestamp-claimedTimestamp)answerDiff, (claimedTimestamp-createTimestamp)responseDiff
                         FROM Question
                         WHERE solved = true 
                     ) as T
@@ -53,9 +93,9 @@ export default new Command({
 		if (subCommandName === 'by_month') {
 			data = await prisma.$queryRaw<Array<MonthlyTaData>>(
 				Prisma.sql`
-                    SELECT taId, T.month, sum(T.diff)sumInSec, count(T.month)count, (sum(T.diff)/count(T.month))avgInSec
+                    SELECT taId, T.month, sum(T.answerDiff)sumInSec, count(T.month)count, (sum(T.responseDiff)/count(T.month))avgResponseInSec
                     FROM (
-                        SELECT DATE_FORMAT(solvedTimestamp, '%Y%m')month, taId, (solvedTimestamp-createTimestamp)diff
+                        SELECT DATE_FORMAT(solvedTimestamp, '%Y%m')month, taId, (solvedTimestamp-claimedTimestamp)answerDiff, (claimedTimestamp-createTimestamp)responseDiff
                         FROM Question
                         WHERE solved = true 
                     ) as T
@@ -65,26 +105,34 @@ export default new Command({
 			);
 			durationProperty = 'month';
 		}
+		console.log(data);
 
 		if (data.length !== 0) {
-			let index = '';
+			type embedRows = {
+				timeRow: string;
+				recordRow: string;
+			};
 
-			embedDescription = data.reduce((pre, cur) => {
-				const { taId, sumInSec, avgInSec, count } = cur;
+			let latestTime = '';
+			let latestTimeIndex = 0;
+			const content = data.reduce((pre, cur) => {
+				const { taId, sumInSec, avgResponseInSec, count } = cur;
 				const counInNumber = Number(count);
-				const sumInHours = Math.floor(Number(sumInSec) / 3600).toFixed(1);
-				const avgInHours = Math.floor(Number(avgInSec) / 3600).toFixed(1);
-				const row = sprintf(CONTENT.DATA_ROW, {
+				const sumInMins = (Number(sumInSec) / 60).toFixed(1);
+				const avgResponseInMins = (Number(avgResponseInSec) / 60).toFixed(1);
+				const recordRow = sprintf(CONTENT.DATA_ROW, {
 					userId: taId,
-					totalHours: sumInHours,
+					totalHours: sumInMins,
 					answerCount: counInNumber,
-					avgHours: avgInHours
+					avgHours: avgResponseInMins
 				});
 
-				if (cur[durationProperty] !== index) {
-					index = cur[durationProperty];
-					const yearInNumber = Number(index.slice(0, 4));
-					const weekOrMonthInNumber = Number(index.slice(4, 6));
+				if (cur[durationProperty] !== latestTime) {
+					latestTime = cur[durationProperty];
+					latestTimeIndex = pre.length;
+					const yearInNumber = Number(latestTime.slice(0, 4));
+					const weekOrMonthInNumber = Number(latestTime.slice(4, 6));
+					let timeRow: string;
 
 					if (durationProperty === 'week') {
 						const { start, end } = getStartAndEndOfWeekUTCInSec(
@@ -92,7 +140,7 @@ export default new Command({
 							weekOrMonthInNumber
 						);
 
-						pre += sprintf(CONTENT.WEEK_ROW, {
+						timeRow = sprintf(CONTENT.WEEK_ROW, {
 							week: weekOrMonthInNumber,
 							start: start,
 							end: end
@@ -103,27 +151,70 @@ export default new Command({
 							weekOrMonthInNumber
 						);
 
-						pre += sprintf(CONTENT.MONTH_ROW, {
+						timeRow = sprintf(CONTENT.MONTH_ROW, {
 							month: weekOrMonthInNumber,
 							start: start,
 							end: end
 						});
 					}
-					pre += row;
+					pre.push({
+						timeRow: timeRow,
+						recordRow: recordRow
+					});
 				} else {
-					pre += row;
+					pre[latestTimeIndex].recordRow += recordRow;
 				}
 				return pre;
-			}, '');
-		}
+			}, [] as Array<embedRows>);
 
-		return interaction.followUp({
-			embeds: [
-				new EmbedBuilder()
-					.setTitle('TA Dashboard')
-					.setDescription(embedDescription)
-					.setTimestamp()
-			]
-		});
+			console.log(content);
+			const groupedContent = content.reduce((pre, _, index) => {
+				if (index % NUMBER.RECORD_PER_EMBED_MSG === 0) {
+					pre.push(
+						content
+							.slice(index, index + NUMBER.RECORD_PER_EMBED_MSG)
+							.reduce((preStr, cur) => {
+								preStr += cur.timeRow + cur.recordRow;
+								return preStr;
+							}, '')
+					);
+				}
+				return pre;
+			}, [] as Array<string>);
+
+			console.log(groupedContent);
+			const embedArrays = groupedContent.reduce((pre, _, index) => {
+				if (index % NUMBER.EMBED_PER_MSG === 0) {
+					pre.push([
+						...groupedContent
+							.slice(index, index + NUMBER.EMBED_PER_MSG)
+							.map((embedDescribe) =>
+								new EmbedBuilder()
+									.setTitle('TA Dashboard')
+									.setDescription(embedDescribe)
+									.setFooter({ text: `Page ${(index + 1).toString()}` })
+							)
+					]);
+				}
+				return pre;
+			}, [] as Array<Array<EmbedBuilder>>);
+
+			console.log(embedArrays);
+
+			for (const embedArray of embedArrays) {
+				await interaction.followUp({
+					embeds: [...embedArray]
+				});
+			}
+		} else {
+			return interaction.followUp({
+				embeds: [
+					new EmbedBuilder()
+						.setTitle('TA Dashboard')
+						.setDescription('No Data')
+						.setTimestamp()
+				]
+			});
+		}
 	}
 });

@@ -3,6 +3,7 @@ import { ApplicationCommandOptionChoiceData } from 'discord.js';
 import { Auto } from '../structures/AutoComplete';
 import { myCache } from '../structures/Cache';
 import { CommandNameEnum } from '../types/Command';
+import { NUMBER } from '../utils/const';
 
 export default new Auto({
 	correspondingCommandName: CommandNameEnum.Answer,
@@ -19,7 +20,8 @@ export default new Auto({
 			.map((threadId) => ({
 				name: questionsInform[threadId].summary,
 				value: threadId
-			}));
+			}))
+			.slice(0, NUMBER.AUTOCOMPLETE_OPTION_LENGTH);
 
 		if (filter.length === 0) return interaction.respond([]);
 		else return interaction.respond(filter);

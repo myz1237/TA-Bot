@@ -74,7 +74,7 @@ export default new MessageContextMenu({
 		if (!guildInform || !questionChannelId) {
 			return interaction.reply({
 				content: `Please use </${CommandNameEnum.Init} question:${fetchCommandId(
-					ContextMenuNameEnum.RaiseQuestion,
+					CommandNameEnum.Init,
 					guild
 				)}> to set up a question channel first. If you don't undestand, please call the admin.`,
 				ephemeral: true
@@ -143,6 +143,11 @@ export default new MessageContextMenu({
 						},
 						{
 							name: FieldsName.Start,
+							value: `<t:${Math.floor(new Date().getTime() / 1000)}:D>`,
+							inline: true
+						},
+						{
+							name: FieldsName.Claim,
 							value: '`Unavailable`',
 							inline: true
 						},
@@ -152,6 +157,7 @@ export default new MessageContextMenu({
 							inline: true
 						}
 					])
+					.setThumbnail(LINK.IMAGE_WAITING)
 					.setFooter({ text: `Question ID: ${questionThreadId}` })
 			],
 			components: [
@@ -187,11 +193,11 @@ export default new MessageContextMenu({
 		await prisma.question.create({
 			data: {
 				id: questionThreadId,
-                discordId: guildId,
-                raisedBy: memberId,
-                taId: '',
-                taName: '',
-                summary: ''
+				discordId: guildId,
+				raisedBy: memberId,
+				taId: '',
+				taName: '',
+				summary: ''
 			}
 		});
 

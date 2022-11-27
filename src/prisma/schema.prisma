@@ -15,16 +15,18 @@ model Guild {
     taRole            String @default("")
     adminRole         String @default("")
     questionChannelId String @default("")
+    hypeChannelId     String @default("")
 }
 
 model Question {
-    id              String   @id
-    createTimestamp DateTime @default(now())
-    solvedTimestamp DateTime @default(now())
-    solved          Boolean  @default(false)
-    raisedBy        String
-    taId            String
-    taName          String
-    discordId       String
-    summary         String
+    id               String   @id
+    createTimestamp  DateTime @default(now())
+    claimedTimestamp DateTime @default(now())
+    solvedTimestamp  DateTime @default(now())
+    solved           Boolean  @default(false)
+    raisedBy         String
+    taId             String
+    taName           String
+    discordId        String
+    summary          String
 }

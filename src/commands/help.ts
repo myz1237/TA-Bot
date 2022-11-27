@@ -28,9 +28,9 @@ export default new Command({
         > </${initCommandName} ta:${initCommandId}> Set TA role.
         > </${initCommandName} admin:${initCommandId}> Set Admin role.
         > </${initCommandName} question:${initCommandId}> Set question channel for TA tracking and statistics.
-        </answer:${answerCommandId}>
-        > \`/answer query\` Get an answer of a query, only visible to yourself.
-        > \`/answer query target\` Get an answer of a query and mention a user.
+        </${answerCommandName}:${answerCommandId}>
+        > \`/${answerCommandName} query\` Get an answer of a query, only visible to yourself.
+        > \`/${answerCommandName} query target\` Get an answer of a query and mention a user.
         **${raiseCommandName}**
         > Raise your question in a text channel and wait for reply from TAs.
          **${collectCommandName}**

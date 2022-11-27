@@ -9,7 +9,11 @@ import { prisma } from '../prisma/prisma';
 import { myCache } from '../structures/Cache';
 import { Command } from '../structures/Command';
 import { CommandNameEnum } from '../types/Command';
-import { defaultGuildSetting } from '../utils/const';
+import {
+	ChannelSubCommandName,
+	ChannelSubCommandNameToDbProperty,
+	defaultGuildSetting
+} from '../utils/const';
 import {
 	checkTextChannelCommonPermission,
 	fetchGuildDefaultAdminRoleFromAuditLog,
@@ -50,8 +54,23 @@ export default new Command({
 		},
 		{
 			type: ApplicationCommandOptionType.Subcommand,
-			name: 'question',
+			name: ChannelSubCommandName.QuestionChannel,
 			description: 'Init the Question channels, where TAs can solve issues with our users.',
+			options: [
+				{
+					name: 'channel',
+					description: 'Choose a channel from the list',
+					type: ApplicationCommandOptionType.Channel,
+					required: true,
+					channelTypes: [ChannelType.GuildText]
+				}
+			]
+		},
+		{
+			type: ApplicationCommandOptionType.Subcommand,
+			name: ChannelSubCommandName.HypeChannel,
+			description:
+				'Init the Hype channels, where Admin teams can receive the latest hype information.',
 			options: [
 				{
 					name: 'channel',
@@ -107,7 +126,7 @@ export default new Command({
 			});
 		}
 
-		const { adminRole, taRole, questionChannelId } = guildInform;
+		const { adminRole, taRole } = guildInform;
 
 		if (subCommandName === 'admin') {
 			const role = args.getRole('role');
@@ -177,9 +196,12 @@ export default new Command({
 			});
 		}
 
-		if (subCommandName === 'question') {
+		if (
+			Object.values(ChannelSubCommandName).includes(subCommandName as ChannelSubCommandName)
+		) {
 			const targetChannel = args.getChannel('channel') as TextChannel;
 			const targetChannelId = targetChannel.id;
+			const propertyName = ChannelSubCommandNameToDbProperty[subCommandName];
 			const permissionChecking = checkTextChannelCommonPermission(
 				targetChannel,
 				guild.members.me.id
@@ -191,21 +213,21 @@ export default new Command({
 					ephemeral: true
 				});
 			}
-			if (questionChannelId === targetChannelId) {
+			if (guildInform[propertyName] === targetChannelId) {
 				return interaction.reply({
-					content: `<#${targetChannelId}> has been set as question channel.`,
+					content: `<#${targetChannelId}> has been set as ${subCommandName} channel.`,
 					ephemeral: true
 				});
 			}
 
 			await interaction.deferReply({ ephemeral: true });
-			guildInform.questionChannelId = targetChannelId;
+			guildInform[propertyName] = targetChannelId;
 			await prisma.guild.upsert({
 				where: {
 					id: guildId
 				},
 				update: {
-					questionChannelId: targetChannelId
+					[propertyName]: targetChannelId
 				},
 				create: {
 					id: guildId,
@@ -217,7 +239,7 @@ export default new Command({
 				[guildId]: guildInform
 			});
 			return interaction.followUp({
-				content: `<#${targetChannelId}> has been set as question channel.`,
+				content: `<#${targetChannelId}> has been set as ${subCommandName} channel.`,
 				ephemeral: true
 			});
 		}

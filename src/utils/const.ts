@@ -1,10 +1,16 @@
 /* eslint-disable no-unused-vars */
+import { Guild } from '@prisma/client';
+
 import { ButtonCollectorCustomId } from '../types/Button';
 import { CacheType, GuildInform } from '../types/Cache';
 
-type NumericalProperty = 'AWAIT_TIMEOUT' | 'AUTOCOMPLETE_OPTION_LENGTH';
+type NumericalProperty =
+	| 'AWAIT_TIMEOUT'
+	| 'AUTOCOMPLETE_OPTION_LENGTH'
+	| 'RECORD_PER_EMBED_MSG'
+	| 'EMBED_PER_MSG';
 type ErroProperty = 'COMMON' | 'GRAPHQL' | 'INTERACTION' | 'BUTTON' | 'AUTO' | 'MODAL' | 'MENU';
-type LinkProperty = 'THREAD';
+type LinkProperty = 'THREAD' | 'IMAGE_WAITING' | 'IMAGE_CLAIMED' | 'IMAGE_SOLVED';
 type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW';
 
 type Numerical = Readonly<Record<NumericalProperty, number>>;
@@ -14,18 +20,26 @@ type Content = Readonly<Record<ContentProperty, string>>;
 
 export const NUMBER: Numerical = {
 	AWAIT_TIMEOUT: 15 * 1000,
-	AUTOCOMPLETE_OPTION_LENGTH: 25
+	AUTOCOMPLETE_OPTION_LENGTH: 25,
+	RECORD_PER_EMBED_MSG: 2,
+	EMBED_PER_MSG: 10
 };
 
 export const LINK: Link = {
-	THREAD: 'https://discord.com/channels/%(guildId)s/%(threadId)s'
+	THREAD: 'https://discord.com/channels/%(guildId)s/%(threadId)s',
+	IMAGE_WAITING:
+		'https://cdn.discordapp.com/attachments/1006879175266816092/1045881608328183899/2022-11-26_09.50.11.png',
+	IMAGE_CLAIMED:
+		'https://cdn.discordapp.com/attachments/1006879175266816092/1045878335005265980/image.png',
+	IMAGE_SOLVED:
+		'https://cdn.discordapp.com/attachments/1006879175266816092/1045908111967399947/2022-11-26_11.44.42.png'
 };
 
 export const CONTENT: Content = {
 	DATA_ROW:
-		'> <@%(userId)s>  `%(totalHours)s`hrs  `%(answerCount)d`answers  `%(avgHours)s`Avg.hrs\n',
-	WEEK_ROW: '**WEEK** \`%(week)s\`: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
-	MONTH_ROW: '**MONTH** \`%(month)s\`: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n'
+		'> <@%(userId)s>  `%(totalHours)s`mins  `%(answerCount)d`answers  `%(avgHours)s`Avg Resonse mins\n',
+	WEEK_ROW: '**WEEK** `%(week)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
+	MONTH_ROW: '**MONTH** `%(month)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n'
 };
 
 export const ERROR_REPLY: InternalError = {
@@ -51,6 +65,7 @@ export const CACHE_KEYS: Readonly<Record<keyof CacheType, keyof CacheType>> = {
 export const defaultGuildSetting: GuildInform = {
 	adminRole: '',
 	questionChannelId: '',
+	hypeChannelId: '',
 	taRole: ''
 };
 
@@ -65,5 +80,18 @@ export enum FieldsName {
 	RaisedBy = 'Raised By',
 	ClaimedBy = 'Claimed By',
 	Start = 'Start Timestamp',
-	End = 'End Timestamp'
+	Claim = 'Claimed Timestamp',
+	End = 'Resolved Timestamp'
 }
+
+export enum ChannelSubCommandName {
+	QuestionChannel = 'question',
+	HypeChannel = 'hype'
+}
+
+export const ChannelSubCommandNameToDbProperty: Readonly<
+	Record<ChannelSubCommandName, keyof Guild>
+> = {
+	question: 'questionChannelId',
+	hype: 'hypeChannelId'
+};

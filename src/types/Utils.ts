@@ -4,7 +4,7 @@ export interface WeeklyTaData extends Pick<Question, 'taId' | 'taName'> {
 	week: string;
 	sumInSec: number;
 	count: BigInt;
-	avgInSec: number;
+	avgResponseInSec: number;
 }
 
 export interface MonthlyTaData extends Omit<WeeklyTaData, 'week'> {

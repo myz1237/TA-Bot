@@ -1,15 +1,11 @@
-import { Question } from '@prisma/client';
+import { Guild, Question } from '@prisma/client';
 
 export interface CacheType {
 	Guild: GuildSettings;
 	Questions: QuestionCache;
 }
 
-export interface GuildInform {
-	taRole: string;
-	adminRole: string;
-	questionChannelId: string;
-}
+export type GuildInform = Omit<Guild, 'id'>;
 
 type GuildId = string;
 type ThreadId = string;

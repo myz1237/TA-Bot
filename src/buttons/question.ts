@@ -13,7 +13,7 @@ import { prisma } from '../prisma/prisma';
 import { Button } from '../structures/Button';
 import { myCache } from '../structures/Cache';
 import { CommandNameEnum } from '../types/Command';
-import { FieldsName, QuestionStatus } from '../utils/const';
+import { FieldsName, LINK, QuestionStatus } from '../utils/const';
 import {
 	awaitWrap,
 	checkTextChannelThreadPermission,
@@ -32,7 +32,7 @@ export default new Button({
 			const initCommandId = fetchCommandId(CommandNameEnum.Init, guild);
 
 			return interaction.reply({
-				content: `Please set up TA role with the </${CommandNameEnum.Init} ta: ${initCommandId}>`,
+				content: `Please set up TA role with the </${CommandNameEnum.Init} ta:${initCommandId}>`,
 				ephemeral: true
 			});
 		} else {
@@ -117,11 +117,14 @@ export default new Button({
 					case FieldsName.ClaimedBy:
 						embed.fields[index].value = `<@${interaction.user.id}>`;
 						break;
-					case FieldsName.Start:
-						embed.fields[index].value = `<t:${current}>`;
+					case FieldsName.Claim:
+						embed.fields[index].value = `<t:${current}:D>`;
 						break;
 				}
 			});
+			embed.thumbnail = {
+				url: LINK.IMAGE_CLAIMED
+			};
 			buttons.components[0].label = `Claimed By ${memberName}`;
 			buttons.components[0].disabled = true;
 			buttons.components[1].disabled = false;
@@ -143,7 +146,7 @@ export default new Button({
 					id: questionThreadId
 				},
 				data: {
-					createTimestamp: new Date(),
+					claimedTimestamp: new Date(),
 					taId: member.id,
 					taName: memberName
 				}
@@ -171,11 +174,13 @@ export default new Button({
 						embed.fields[index].value = QuestionStatus.Solved;
 						break;
 					case FieldsName.End:
-						embed.fields[index].value = `<t:${current}>`;
+						embed.fields[index].value = `<t:${current}:D>`;
 						break;
 				}
 			});
-
+			embed.thumbnail = {
+				url: LINK.IMAGE_SOLVED
+			};
 			buttons.components[1].disabled = true;
 			buttons.components[1].label = `Solved by ${memberName}`;
 			await message.edit({
@@ -214,13 +219,16 @@ export default new Button({
 						}
 					}
 				});
+				return interaction.followUp({
+					content:
+						'Thanks for your contribution. Have a nice day!'
+				});
+			} else {
+				return interaction.followUp({
+					content:
+						'Thanks for your contribution. Please add a summary through the button `Question Summary` to help us build a Q&A database. Have a nice day!'
+				});
 			}
-
-			// todo check if the summary was set
-			return interaction.followUp({
-				content:
-					'Are you willing to add a summary to help us index the question and reuse it later? Please click the above button `Question Summary`.'
-			});
 		}
 	}
 });

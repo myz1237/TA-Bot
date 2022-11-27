@@ -148,7 +148,7 @@ export function checkTextChannelCommonPermission(channel: GuildTextBasedChannel,
 }
 
 export function readGuildSetting(guildInform: GuildInform) {
-	const { adminRole, taRole, questionChannelId } = guildInform;
+	const { adminRole, taRole, questionChannelId, hypeChannelId } = guildInform;
 
 	return new EmbedBuilder().setTitle('Guild Setting Dashboard').setFields([
 		{
@@ -164,6 +164,11 @@ export function readGuildSetting(guildInform: GuildInform) {
 		{
 			name: 'Question Channel',
 			value: questionChannelId ? `> <#${questionChannelId}>` : '> -',
+			inline: false
+		},
+		{
+			name: 'Hype Channel',
+			value: hypeChannelId ? `> <#${hypeChannelId}>` : '> -',
 			inline: false
 		}
 	]);
