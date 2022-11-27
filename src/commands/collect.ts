@@ -105,7 +105,6 @@ export default new Command({
 			);
 			durationProperty = 'month';
 		}
-		console.log(data);
 
 		if (data.length !== 0) {
 			type embedRows = {
@@ -167,7 +166,6 @@ export default new Command({
 				return pre;
 			}, [] as Array<embedRows>);
 
-			console.log(content);
 			const groupedContent = content.reduce((pre, _, index) => {
 				if (index % NUMBER.RECORD_PER_EMBED_MSG === 0) {
 					pre.push(
@@ -182,7 +180,6 @@ export default new Command({
 				return pre;
 			}, [] as Array<string>);
 
-			console.log(groupedContent);
 			const embedArrays = groupedContent.reduce((pre, _, index) => {
 				if (index % NUMBER.EMBED_PER_MSG === 0) {
 					pre.push([
@@ -199,13 +196,12 @@ export default new Command({
 				return pre;
 			}, [] as Array<Array<EmbedBuilder>>);
 
-			console.log(embedArrays);
-
 			for (const embedArray of embedArrays) {
 				await interaction.followUp({
 					embeds: [...embedArray]
 				});
 			}
+			return;
 		} else {
 			return interaction.followUp({
 				embeds: [

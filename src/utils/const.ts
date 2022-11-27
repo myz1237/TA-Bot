@@ -79,9 +79,9 @@ export enum FieldsName {
 	Status = 'Status',
 	RaisedBy = 'Raised By',
 	ClaimedBy = 'Claimed By',
-	Start = 'Start Timestamp',
-	Claim = 'Claimed Timestamp',
-	End = 'Resolved Timestamp'
+	Start = 'Start',
+	Claim = 'Claimed',
+	End = 'Resolved'
 }
 
 export enum ChannelSubCommandName {
