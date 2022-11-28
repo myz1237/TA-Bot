@@ -32,7 +32,8 @@
 		"pino": "^8.6.1",
 		"pino-pretty": "^9.1.1",
 		"prisma": "^4.6.1",
-		"sprintf-js": "^1.1.2"
+		"sprintf-js": "^1.1.2",
+		"ts-node": "^10.9.1"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^5.42.0",
