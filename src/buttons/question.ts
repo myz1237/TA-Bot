@@ -13,7 +13,7 @@ import { prisma } from '../prisma/prisma';
 import { Button } from '../structures/Button';
 import { myCache } from '../structures/Cache';
 import { CommandNameEnum } from '../types/Command';
-import { FieldsName, LINK, QuestionStatus } from '../utils/const';
+import { FieldsName, QuestionStatus } from '../utils/const';
 import {
 	awaitWrap,
 	checkTextChannelThreadPermission,
@@ -122,9 +122,6 @@ export default new Button({
 						break;
 				}
 			});
-			embed.thumbnail = {
-				url: LINK.IMAGE_CLAIMED
-			};
 			buttons.components[0].label = `Claimed By ${memberName}`;
 			buttons.components[0].disabled = true;
 			buttons.components[1].disabled = false;
@@ -178,9 +175,6 @@ export default new Button({
 						break;
 				}
 			});
-			embed.thumbnail = {
-				url: LINK.IMAGE_SOLVED
-			};
 			buttons.components[1].disabled = true;
 			buttons.components[1].label = `Solved by ${memberName}`;
 			await message.edit({
@@ -220,8 +214,7 @@ export default new Button({
 					}
 				});
 				return interaction.followUp({
-					content:
-						'Thanks for your contribution. Have a nice day!'
+					content: 'Thanks for your contribution. Have a nice day!'
 				});
 			} else {
 				return interaction.followUp({

@@ -10,8 +10,8 @@ type NumericalProperty =
 	| 'RECORD_PER_EMBED_MSG'
 	| 'EMBED_PER_MSG';
 type ErroProperty = 'COMMON' | 'GRAPHQL' | 'INTERACTION' | 'BUTTON' | 'AUTO' | 'MODAL' | 'MENU';
-type LinkProperty = 'THREAD' | 'IMAGE_WAITING' | 'IMAGE_CLAIMED' | 'IMAGE_SOLVED';
-type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW';
+type LinkProperty = 'THREAD' | 'IMAGE_WAITING' | 'IMAGE_CLAIMED' | 'IMAGE_SOLVED' | 'MESSAGE';
+type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW' | 'HYPE_ROW';
 
 type Numerical = Readonly<Record<NumericalProperty, number>>;
 type InternalError = Readonly<Record<ErroProperty, string>>;
@@ -26,6 +26,7 @@ export const NUMBER: Numerical = {
 };
 
 export const LINK: Link = {
+	MESSAGE: 'https://discord.com/channels/%(guildId)s/%(channelId)s/%(messageId)s',
 	THREAD: 'https://discord.com/channels/%(guildId)s/%(threadId)s',
 	IMAGE_WAITING:
 		'https://cdn.discordapp.com/attachments/1006879175266816092/1045881608328183899/2022-11-26_09.50.11.png',
@@ -39,7 +40,8 @@ export const CONTENT: Content = {
 	DATA_ROW:
 		'> <@%(userId)s>  `%(totalHours)s`mins  `%(answerCount)d`answers  `%(avgHours)s`Avg Resonse mins\n',
 	WEEK_ROW: '**WEEK** `%(week)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
-	MONTH_ROW: '**MONTH** `%(month)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n'
+	MONTH_ROW: '**MONTH** `%(month)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
+	HYPE_ROW: '> <@%(userId)s> has hyped `%(hypeCount)s` messages\n'
 };
 
 export const ERROR_REPLY: InternalError = {

@@ -33,7 +33,8 @@ type MessageContextMenuRunFunction = (options: MessageContextMenuCommandRunOptio
 type UserContextMenuRunFunction = (options: UserContextMenuCommandRunOption) => any;
 
 export enum ContextMenuNameEnum {
-	RaiseQuestion = 'Shipper Support'
+	RaiseQuestion = 'Shipper Support',
+	HypeMessage = 'Add Hype'
 }
 export type UserContextMenuType = {
 	userPermissions?: PermissionResolvable[];

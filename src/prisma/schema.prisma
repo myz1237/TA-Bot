@@ -30,3 +30,11 @@ model Question {
     discordId        String
     summary          String
 }
+
+model Hype {
+    id              String   @id
+    createTimestamp DateTime @default(now())
+    taId            String
+    taName          String
+    discordId       String
+}

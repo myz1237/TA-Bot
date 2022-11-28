@@ -7,7 +7,7 @@ import {
 	EmbedBuilder,
 	Guild,
 	GuildTextBasedChannel,
-	PermissionFlagsBits
+	PermissionFlagsBits,
 } from 'discord.js';
 import { sprintf } from 'sprintf-js';
 

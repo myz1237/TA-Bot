@@ -1,5 +1,6 @@
 import {
 	ActionRowBuilder,
+	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	ButtonBuilder,
 	ButtonStyle,
@@ -12,9 +13,8 @@ import { sprintf } from 'sprintf-js';
 
 import { prisma } from '../prisma/prisma';
 import { myCache } from '../structures/Cache';
-import { MessageContextMenu } from '../structures/ContextMenu';
+import { Command } from '../structures/Command';
 import { CommandNameEnum } from '../types/Command';
-import { ContextMenuNameEnum } from '../types/ContextMenu';
 import { FieldsName, LINK, QuestionStatus } from '../utils/const';
 import {
 	checkTextChannelCommonPermission,
@@ -22,42 +22,27 @@ import {
 	fetchCommandId
 } from '../utils/util';
 
-export default new MessageContextMenu({
-	name: ContextMenuNameEnum.RaiseQuestion,
-	type: ApplicationCommandType.Message,
-	execute: async ({ interaction }) => {
-		const { guildId, guild, targetMessage, channel: currentChannel } = interaction;
+export default new Command({
+	name: CommandNameEnum.Question,
+	description: 'Raise a question and create a thread in current channel',
+	options: [
+		{
+			name: 'question',
+			description: 'Your question',
+			type: ApplicationCommandOptionType.String,
+			required: true
+		}
+	],
+	type: ApplicationCommandType.ChatInput,
+	execute: async ({ interaction, args }) => {
+		const questionContent = args.getString('question');
+		const { guildId, guild, channel: currentChannel } = interaction;
+		const { displayName: memberName, id: memberId } = interaction.member;
+		const botId = guild.members.me.id;
 
-		// All pre-checking
 		if (currentChannel.type !== ChannelType.GuildText) {
 			return interaction.reply({
 				content: 'Sorry, this command is only used in the Text Channel.',
-				ephemeral: true
-			});
-		}
-
-		const { author } = targetMessage;
-
-		if (targetMessage.hasThread) {
-			return interaction.reply({
-				content: 'Sorry, you cannot recreate a thread based on this message.',
-				ephemeral: true
-			});
-		}
-
-		const { displayName: memberName, id: memberId } = targetMessage.member;
-		const botId = guild.members.me.id;
-
-		if (author.bot) {
-			return interaction.reply({
-				content: 'Sorry, you cannot raise a question from a bot message.',
-				ephemeral: true
-			});
-		}
-
-		if (targetMessage.author.id !== interaction.user.id) {
-			return interaction.reply({
-				content: 'Sorry, you can only raise question from your own message.',
 				ephemeral: true
 			});
 		}
@@ -105,17 +90,18 @@ export default new MessageContextMenu({
 			});
 		}
 
-		// Create thread based on the message
 		await interaction.deferReply({ ephemeral: true });
 		const threadName = `${QuestionStatus.Wait} -- Question from ${memberName}`;
 		const questionThread = await currentChannel.threads.create({
 			name: threadName,
-			startMessage: targetMessage,
 			autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays
 		});
 		const questionThreadId = questionThread.id;
 
-		// Forward Message to the question channel
+		await questionThread.send({
+			content: `Question from <@${memberId}>:\n${questionContent}`
+		});
+
 		const threadLink = sprintf(LINK.THREAD, {
 			guildId: guildId,
 			threadId: questionThreadId

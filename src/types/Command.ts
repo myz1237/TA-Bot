@@ -21,11 +21,12 @@ interface CommandRunOptions {
 }
 
 type RunFunction = (options: CommandRunOptions) => any;
-export enum  CommandNameEnum {
+export enum CommandNameEnum {
 	Init = 'init',
 	Answer = 'answer',
 	Help = 'help',
-	Collect = 'collect'
+	Collect = 'collect',
+	Question = 'raise'
 }
 export type CommandType = {
 	name: CommandNameEnum;
