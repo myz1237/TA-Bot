@@ -1,4 +1,4 @@
-run = "npm run dev"
+run = "npm run replit"
 
 [languages.typescript]
 pattern = "**/{*.ts,*.js,*.tsx,*.jsx}"
