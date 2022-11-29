@@ -1,15 +1,18 @@
 import { Prisma } from '@prisma/client';
 import AsciiTable from 'ascii-table';
 import {
+	ActivityType,
 	ChatInputApplicationCommandData,
 	Client,
 	ClientEvents,
 	Collection,
 	GatewayIntentBits,
 	MessageApplicationCommandData,
+	PresenceUpdateStatus,
 	UserApplicationCommandData
 } from 'discord.js';
 import glob from 'glob';
+import { sprintf } from 'sprintf-js';
 import { promisify } from 'util';
 
 import { prisma } from '../prisma/prisma';
@@ -20,9 +23,9 @@ import { CommandType } from '../types/Command';
 import { RegisterCommandsOptions } from '../types/CommandRegister';
 import { MessageContextMenuType, UserContextMenuType } from '../types/ContextMenu';
 import { ModalType } from '../types/Modal';
-import { defaultGuildSetting } from '../utils/const';
+import { CONTENT, defaultGuildSetting, NUMBER } from '../utils/const';
 import { logger } from '../utils/logger';
-import { fetchGuildDefaultAdminRoleFromAuditLog } from '../utils/util';
+import { awaitWrap, fetchGuildDefaultAdminRoleFromAuditLog } from '../utils/util';
 import { myCache } from './Cache';
 import { Event } from './Event';
 
@@ -46,9 +49,7 @@ export class MyClient extends Client {
 				GatewayIntentBits.GuildMessages,
 				GatewayIntentBits.MessageContent,
 				GatewayIntentBits.GuildMembers,
-				GatewayIntentBits.GuildPresences,
-				GatewayIntentBits.DirectMessageReactions,
-				GatewayIntentBits.GuildVoiceStates
+				GatewayIntentBits.GuildPresences
 			]
 		});
 
@@ -140,6 +141,7 @@ export class MyClient extends Client {
 			logger.info('Bot is online');
 			await this.guilds.fetch();
 			await this._loadCache();
+			setInterval(this._presenseUpdate, NUMBER.PRESENCE_UPDATE_INTERVAL, this);
 			if (process.env.MODE === 'dev') {
 				await this._registerCommands({
 					guildId: process.env.GUILDID,
@@ -239,5 +241,32 @@ export class MyClient extends Client {
 		this.table.addRow('Questions', `✅ Fetched and cached`);
 
 		logger.info(`\n${this.table.toString()}`);
+	}
+
+	private async _presenseUpdate(client: MyClient) {
+		const { result: solvedCounter, error: solvedError } = await awaitWrap(
+			prisma.question.count({
+				where: {
+					solved: true
+				}
+			})
+		);
+		const { result: raisedCounter, error: raisedError } = await awaitWrap(
+			prisma.question.count()
+		);
+
+		if (solvedError || raisedError) return;
+		client.user.setPresence({
+			status: PresenceUpdateStatus.Online,
+			activities: [
+				{
+					name: sprintf(CONTENT.PRESENCE, {
+						solvedCounter,
+						raisedCounter
+					}),
+					type: ActivityType.Watching
+				}
+			]
+		});
 	}
 }

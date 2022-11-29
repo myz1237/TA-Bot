@@ -8,10 +8,11 @@ type NumericalProperty =
 	| 'AWAIT_TIMEOUT'
 	| 'AUTOCOMPLETE_OPTION_LENGTH'
 	| 'RECORD_PER_EMBED_MSG'
-	| 'EMBED_PER_MSG';
+	| 'EMBED_PER_MSG'
+	| 'PRESENCE_UPDATE_INTERVAL';
 type ErroProperty = 'COMMON' | 'GRAPHQL' | 'INTERACTION' | 'BUTTON' | 'AUTO' | 'MODAL' | 'MENU';
 type LinkProperty = 'THREAD' | 'IMAGE_WAITING' | 'IMAGE_CLAIMED' | 'IMAGE_SOLVED' | 'MESSAGE';
-type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW' | 'HYPE_ROW';
+type ContentProperty = 'DATA_ROW' | 'WEEK_ROW' | 'MONTH_ROW' | 'HYPE_ROW' | 'PRESENCE';
 
 type Numerical = Readonly<Record<NumericalProperty, number>>;
 type InternalError = Readonly<Record<ErroProperty, string>>;
@@ -22,7 +23,8 @@ export const NUMBER: Numerical = {
 	AWAIT_TIMEOUT: 15 * 1000,
 	AUTOCOMPLETE_OPTION_LENGTH: 25,
 	RECORD_PER_EMBED_MSG: 2,
-	EMBED_PER_MSG: 10
+	EMBED_PER_MSG: 10,
+	PRESENCE_UPDATE_INTERVAL: 1 * 60 * 1000
 };
 
 export const LINK: Link = {
@@ -41,7 +43,8 @@ export const CONTENT: Content = {
 		'> <@%(userId)s>  `%(totalHours)s`mins  `%(answerCount)d`answers  `%(avgHours)s`Avg Resonse mins\n',
 	WEEK_ROW: '**WEEK** `%(week)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
 	MONTH_ROW: '**MONTH** `%(month)s`, %(year)s: UTC <t:%(start)s:d> -- UTC <t:%(end)s:d>\n',
-	HYPE_ROW: '> <@%(userId)s> has hyped `%(hypeCount)s` messages\n'
+	HYPE_ROW: '> <@%(userId)s> has hyped `%(hypeCount)s` messages\n',
+	PRESENCE: '✅  %(solvedCounter)s|❓  %(raisedCounter)s | 🤖  Buidl'
 };
 
 export const ERROR_REPLY: InternalError = {
