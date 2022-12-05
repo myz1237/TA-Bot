@@ -138,6 +138,7 @@ export default new Command({
 
 							timeRow = sprintf(CONTENT.WEEK_ROW, {
 								week: weekOrMonthInNumber,
+								year: yearInNumber,
 								start: start,
 								end: end
 							});
@@ -149,6 +150,7 @@ export default new Command({
 
 							timeRow = sprintf(CONTENT.MONTH_ROW, {
 								month: weekOrMonthInNumber,
+								year: yearInNumber,
 								start: start,
 								end: end
 							});
@@ -182,11 +184,13 @@ export default new Command({
 						pre.push([
 							...groupedContent
 								.slice(index, index + NUMBER.EMBED_PER_MSG)
-								.map((embedDescribe) =>
+								.map((embedDescribe, innerIndex) =>
 									new EmbedBuilder()
 										.setTitle('TA Dashboard')
 										.setDescription(embedDescribe)
-										.setFooter({ text: `Page ${(index + 1).toString()}` })
+										.setFooter({
+											text: `Page ${(index + innerIndex + 1).toString()}`
+										})
 								)
 						]);
 					}

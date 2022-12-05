@@ -13,13 +13,16 @@ export default new Auto({
 		const questionsInform = myCache.myGet('Questions')?.[guildId] ?? {};
 
 		if (Object.keys(questionsInform).length === 0) return interaction.respond([]);
-		const filter: Array<ApplicationCommandOptionChoiceData> = Object.keys(questionsInform)
-			.filter((threadId) =>
-				questionsInform[threadId].summary.toLowerCase().includes(inputValue.toLowerCase())
+		const filter: Array<ApplicationCommandOptionChoiceData> = Object.values(questionsInform)
+			.filter(
+				(thread) =>
+					// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+					thread.summary &&
+					thread.summary.toLowerCase().includes(inputValue.toLowerCase())
 			)
-			.map((threadId) => ({
-				name: questionsInform[threadId].summary,
-				value: threadId
+			.map((thread) => ({
+				name: thread.summary,
+				value: thread.id
 			}))
 			.slice(0, NUMBER.AUTOCOMPLETE_OPTION_LENGTH);
 

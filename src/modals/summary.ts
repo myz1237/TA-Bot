@@ -32,7 +32,8 @@ export default new Modal({
 				[guildId]: {
 					...myCache.myGet('Questions')[guildId],
 					[threadId]: {
-						summary: summary
+						summary: summary,
+						id: threadId
 					}
 				}
 			});

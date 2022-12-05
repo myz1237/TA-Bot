@@ -186,12 +186,14 @@ export class MyClient extends Client {
 
 			if (discordId in pre) {
 				pre[discordId][id] = {
-					summary: cur.summary
+					summary: cur.summary,
+					id: cur.id
 				};
 			} else {
 				pre[discordId] = {
 					[id]: {
-						summary: cur.summary
+						summary: cur.summary,
+						id: cur.id
 					}
 				};
 			}

@@ -11,5 +11,5 @@ type GuildId = string;
 type ThreadId = string;
 
 export type GuildSettings = Record<GuildId, GuildInform>;
-export type QuestionInform = Pick<Question, 'summary'>;
+export type QuestionInform = Pick<Question, 'summary' | 'id'>;
 export type QuestionCache = Record<GuildId, Record<ThreadId, QuestionInform>>;

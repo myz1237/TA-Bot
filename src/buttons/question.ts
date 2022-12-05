@@ -209,7 +209,8 @@ export default new Button({
 					[guildId]: {
 						...myCache.myGet('Questions')[guildId],
 						[questionThreadId]: {
-							summary: result.summary
+							summary: result.summary,
+							id: questionThreadId
 						}
 					}
 				});
