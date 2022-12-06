@@ -17,7 +17,12 @@ export default new Command({
 		const answerCommandName = CommandNameEnum.Answer;
 		const answerCommandId = fetchCommandId(answerCommandName, guild);
 
-		const raiseCommandName = ContextMenuNameEnum.RaiseQuestion;
+		const raiseSlashCommandName = CommandNameEnum.Question;
+		const raiseSlashCommandId = fetchCommandId(raiseSlashCommandName, guild);
+
+		const raiseContextCommandName = ContextMenuNameEnum.RaiseQuestion;
+
+		const hypeCommandName = ContextMenuNameEnum.HypeMessage;
 
 		const collectCommandName = CommandNameEnum.Collect;
 		const collectCommandId = fetchCommandId(collectCommandName, guild);
@@ -28,19 +33,24 @@ export default new Command({
         > </${initCommandName} ta:${initCommandId}> Set TA role.
         > </${initCommandName} admin:${initCommandId}> Set Admin role.
         > </${initCommandName} question:${initCommandId}> Set question channel for TA tracking and statistics.
+		**${collectCommandName}**
+        > </${collectCommandName} question by_week:${collectCommandId}> Collect weekly data.
+        > </${collectCommandName} question by_month:${collectCommandId}> Collect monthly data.
+		> </${collectCommandName} hype:${collectCommandId}> Collect hype counts.
+		</${raiseSlashCommandName}:${raiseSlashCommandId}>
+        > \`/${raiseSlashCommandName} question\` Raise your question based on your input
         </${answerCommandName}:${answerCommandId}>
         > \`/${answerCommandName} query\` Get an answer of a query, only visible to yourself.
         > \`/${answerCommandName} query target\` Get an answer of a query and mention a user.
-        **${raiseCommandName}**
+        **${raiseContextCommandName}** -- Message Context Command*
         > Raise your question in a text channel and wait for reply from TAs.
-         **${collectCommandName}**
-        > </${collectCommandName} by_week:${collectCommandId}> Collect weekly data.
-        > </${collectCommandName} by_month:${collectCommandId}> Collect monthly data.
+		 **${hypeCommandName}** -- Message Context Command*
+        > Hype your message and inform teams.
         `;
 
 		return interaction.reply({
 			embeds: [
-				new EmbedBuilder().setTitle('Command Instruction').setDescription(description)
+				new EmbedBuilder().setTitle('Command Instruction').setDescription(description).setFooter({text: '* Right click on a message => Clikc \'App\' => Choose Commands'})
 			],
 			ephemeral: true
 		});
